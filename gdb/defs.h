@@ -125,6 +125,7 @@ enum language
     language_opencl,		/* OpenCL */
     language_minimal,		/* All other languages, minimal support only */
     language_ada,		/* Ada */
+    language_zig,		/* Zig */
     nr_languages
   };
 

@@ -181,6 +181,9 @@ DW_TAG (DW_TAG_upc_relaxed_type, 0x8767)
 /* PGI (STMicroelectronics) extensions.  No documentation available.  */
 DW_TAG (DW_TAG_PGI_kanji_type, 0xA000)
 DW_TAG (DW_TAG_PGI_interface_block, 0xA020)
+/* ZIG extensions. */
+DW_TAG (ZIG_padding, 0xFDB1)
+DW_TAG (ZIG_comptime_value, 0xFDB2)
 DW_END_TAG
 
 DW_FIRST_FORM (DW_FORM_addr, 0x01)
@@ -460,6 +463,14 @@ DW_AT (DW_AT_VMS_rtnbeg_pd_address, 0x2201)
    See http://gcc.gnu.org/wiki/DW_AT_GNAT_descriptive_type .  */
 DW_AT (DW_AT_use_GNAT_descriptive_type, 0x2301)
 DW_AT (DW_AT_GNAT_descriptive_type, 0x2302)
+/* ZIG extensions. */
+DW_AT (DW_AT_ZIG_parent, 0x2CCD)
+DW_AT (DW_AT_ZIG_padding, 0x2CCE)
+DW_AT (DW_AT_ZIG_relative_decl, 0x2CD0)
+DW_AT (DW_AT_ZIG_decl_line_relative, 0x2CD1)
+DW_AT (DW_AT_ZIG_comptime_value, 0x2CD2)
+DW_AT (DW_AT_ZIG_sentinel, 0x2CE2)
+
 /* Rational constant extension.
    See https://gcc.gnu.org/wiki/DW_AT_GNU_numerator_denominator .  */
 DW_TAG (DW_AT_GNU_numerator, 0x2303)

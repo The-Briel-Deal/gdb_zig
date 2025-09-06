@@ -1236,7 +1236,8 @@ COMMON_SFILES = \
 	varobj.c \
 	xml-support.c \
 	xml-syscall.c \
-	xml-tdesc.c
+	xml-tdesc.c \
+	zig-lang.c 
 
 # Links made at configuration time should not be specified here, since
 # SFILES is used in building the distribution archive.

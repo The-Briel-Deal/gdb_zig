@@ -23,7 +23,7 @@
 #include "expression.h"
 #include "parser-defs.h"
 #include "language.h"
-#include "c-lang.h"
+#include "zig-lang.h"
 #include "cp-abi.h"
 #include "cp-support.h"
 #include "gdbcore.h"

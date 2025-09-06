@@ -15700,6 +15700,9 @@ dwarf_lang_to_enum_language (ULONGEST lang)
     case DW_LANG_OpenCL:
       language = language_opencl;
       break;
+    case DW_LANG_Zig:
+      language = language_zig;
+      break;
     case DW_LANG_Cobol74:
     case DW_LANG_Cobol85:
     default:

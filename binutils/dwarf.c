@@ -2423,6 +2423,9 @@ display_lang (uint64_t uvalue)
       /* UPC extension.  */
     case DW_LANG_Upc:			printf ("Unified Parallel C"); break;
 
+      /* Zig extension.  */
+    case DW_LANG_Zig:			printf ("Zig"); break;
+
     default:
       if (uvalue >= DW_LANG_lo_user && uvalue <= DW_LANG_hi_user)
 	printf (_("implementation defined: %#" PRIx64 ""), uvalue);

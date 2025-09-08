@@ -32,15 +32,12 @@
 
 void
 zig_language_arch_info (struct gdbarch *gdbarch,
-                        struct language_arch_info *lai)
+			struct language_arch_info *lai)
 {
   const struct builtin_type *builtin = builtin_type (gdbarch);
 
   /* Helper function to allow shorter lines below.  */
-  auto add  = [&] (struct type * t)
-  {
-    lai->add_primitive_type (t);
-  };
+  auto add = [&] (struct type *t) { lai->add_primitive_type (t); };
 
   add (builtin->builtin_int);
   add (builtin->builtin_long);
@@ -74,17 +71,22 @@ class zig_language : public language_defn
 public:
   zig_language ()
     : language_defn (language_zig)
-  { /* Nothing.  */ }
+  { /* Nothing.  */
+  }
 
   /* See language.h.  */
 
   const char *name () const override
-  { return "zig"; }
+  {
+    return "zig";
+  }
 
   /* See language.h.  */
 
   const char *natural_name () const override
-  { return "Zig"; }
+  {
+    return "Zig";
+  }
 
   /* See language.h.  */
 
@@ -96,7 +98,7 @@ public:
 
   /* See language.h.  */
   void language_arch_info (struct gdbarch *gdbarch,
-                           struct language_arch_info *lai) const override
+			   struct language_arch_info *lai) const override
   {
     zig_language_arch_info (gdbarch, lai);
   }
@@ -111,47 +113,47 @@ public:
   /* See language.h.  */
 
   void print_type (struct type *type, const char *varstring,
-                   struct ui_file *stream, int show, int level,
-                   const struct type_print_options *flags) const override
+		   struct ui_file *stream, int show, int level,
+		   const struct type_print_options *flags) const override
   {
     c_print_type (type, varstring, stream, show, level, la_language, flags);
   }
 
   struct value *read_var_value (struct symbol *var,
-                                const struct block *var_block,
-                                const frame_info_ptr &frame) const override
+				const struct block *var_block,
+				const frame_info_ptr &frame) const override
   {
-    value* val = language_defn::read_var_value (var, var_block, frame);
+    value *val = language_defn::read_var_value (var, var_block, frame);
     // TODO: Remove this once I get this working
     gdb_printf ("GF_DBG:\n"
-                "  val->type()->name() = '%s'\n"
-                "  val->type()->code() = '%d'\n"
-                "  check_typedef(val->type())->code() = '%d'\n"
-                "  val->enclosing_type()->name() = '%s'\n"
-                "  val->enclosing_type()->code() = '%d'\n" 
-                "  val->contents().data() = '%.5s'\n", 
-                val->type()->name(),
-                val->type()->code(),
-                check_typedef(val->type())->code(),
-                val->enclosing_type()->name(),
-                val->enclosing_type()->code(),
-                val->contents().data()
-               );
+		"  val->type()->name() = '%s'\n"
+		"  val->type()->code() = '%d'\n"
+		"  check_typedef(val->type())->code() = '%d'\n"
+		"  val->enclosing_type()->name() = '%s'\n"
+		"  val->enclosing_type()->code() = '%d'\n"
+		"  val->contents().data() = '%.5s'\n",
+		val->type ()->name (), val->type ()->code (),
+		check_typedef (val->type ())->code (),
+		val->enclosing_type ()->name (),
+		val->enclosing_type ()->code (), val->contents ().data ());
     return val;
   }
 
   /* See language.h.  */
 
   bool store_sym_names_in_linkage_form_p () const override
-  { return true; }
+  {
+    return true;
+  }
 
   /* See language.h.  */
 
   enum macro_expansion macro_expansion () const override
-  { return macro_expansion_no; }
+  {
+    return macro_expansion_no;
+  }
 };
 
 /* Single instance of the C language class.  */
 
 static zig_language zig_language_defn;
-

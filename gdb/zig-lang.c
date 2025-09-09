@@ -123,26 +123,13 @@ public:
 				const struct block *var_block,
 				const frame_info_ptr &frame) const override
   {
-    value *val = language_defn::read_var_value (var, var_block, frame);
-    // TODO: Remove this once I get this working
-    gdb_printf ("GF_DBG:\n"
-		"  val->type()->name() = '%s'\n"
-		"  val->type()->code() = '%d'\n"
-		"  check_typedef(val->type())->code() = '%d'\n"
-		"  val->enclosing_type()->name() = '%s'\n"
-		"  val->enclosing_type()->code() = '%d'\n"
-		"  val->contents().data() = '%.5s'\n",
-		val->type ()->name (), val->type ()->code (),
-		check_typedef (val->type ())->code (),
-		val->enclosing_type ()->name (),
-		val->enclosing_type ()->code (), val->contents ().data ());
-    return val;
+    return language_defn::read_var_value (var, var_block, frame);
   }
 
   void value_print (struct value *val, struct ui_file *stream,
 		    const struct value_print_options *options) const override
   {
-    language_defn::value_print (val, stream, options);
+    return language_defn::value_print (val, stream, options);
   }
 
   void

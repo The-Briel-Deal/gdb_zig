@@ -139,6 +139,41 @@ public:
     return val;
   }
 
+  void value_print (struct value *val, struct ui_file *stream,
+		    const struct value_print_options *options) const override
+  {
+    language_defn::value_print (val, stream, options);
+  }
+
+  void
+  value_print_inner (struct value *val, struct ui_file *stream, int recurse,
+		     const struct value_print_options *options) const override
+  {
+    c_value_print_inner (val, stream, recurse, options);
+    type *real_type = check_typedef (val->type ());
+
+    if (!real_type)
+      return;
+
+    if (real_type->code () == TYPE_CODE_PTR)
+      {
+	type *target_real_type = check_typedef (real_type->target_type ());
+
+	if (!target_real_type)
+	  return;
+
+	int len = -1;
+	gdb::unique_xmalloc_ptr<gdb_byte> buffer;
+
+	struct type *char_type;
+	const char *charset;
+
+	c_get_string (value_ind (val), &buffer, &len, &char_type, &charset);
+
+	gdb_printf (" \"%.*s\"", len, buffer.get ());
+      }
+  }
+
   /* See language.h.  */
 
   bool store_sym_names_in_linkage_form_p () const override

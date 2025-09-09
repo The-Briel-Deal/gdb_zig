@@ -17,6 +17,7 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
+#include "c-lang.h"
 #include "extract-store-integer.h"
 #include "symtab.h"
 #include "gdbtypes.h"
@@ -136,10 +137,10 @@ public:
   value_print_inner (struct value *val, struct ui_file *stream, int recurse,
 		     const struct value_print_options *options) const override
   {
-    c_value_print_inner (val, stream, recurse, options);
     type *real_type = check_typedef (val->type ());
 
-    if (real_type->code () == TYPE_CODE_PTR)
+    if (real_type->code () == TYPE_CODE_PTR
+	&& real_type->target_type ()->is_string_like ())
       {
 	int len = -1;
 	gdb::unique_xmalloc_ptr<gdb_byte> buffer;
@@ -149,7 +150,11 @@ public:
 
 	c_get_string (value_ind (val), &buffer, &len, &char_type, &charset);
 
-	gdb_printf (" \"%.*s\"", len, buffer.get ());
+	gdb_printf ("\"%.*s\"", len, buffer.get ());
+      }
+    else
+      {
+	c_value_print_inner (val, stream, recurse, options);
       }
   }
 

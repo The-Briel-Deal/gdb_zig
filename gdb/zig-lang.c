@@ -139,16 +139,8 @@ public:
     c_value_print_inner (val, stream, recurse, options);
     type *real_type = check_typedef (val->type ());
 
-    if (!real_type)
-      return;
-
     if (real_type->code () == TYPE_CODE_PTR)
       {
-	type *target_real_type = check_typedef (real_type->target_type ());
-
-	if (!target_real_type)
-	  return;
-
 	int len = -1;
 	gdb::unique_xmalloc_ptr<gdb_byte> buffer;
 

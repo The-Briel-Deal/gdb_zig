@@ -30,6 +30,7 @@
 #include "gdbcore.h"
 #include "gdbarch.h"
 #include "utils.h"
+#include "valprint.h"
 
 void
 zig_language_arch_info (struct gdbarch *gdbarch,
@@ -150,7 +151,8 @@ public:
 
 	c_get_string (value_ind (val), &buffer, &len, &char_type, &charset);
 
-	gdb_printf ("\"%.*s\"", len, buffer.get ());
+	generic_printstr (stream, char_type, buffer.get(), len, NULL,
+			  0, '"', 1, options);
       }
     else
       {

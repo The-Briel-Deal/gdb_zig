@@ -151,7 +151,8 @@ public:
 
 	c_get_string (value_ind (val), &buffer, &len, &char_type, &charset);
 
-	generic_printstr (stream, char_type, buffer.get(), len, NULL,
+	// TODO: Currently i'm just assuming all strings are UTF-8, this should be the case most of the time but it's possible for a string to use another encoding.
+	generic_printstr (stream, char_type, buffer.get(), len, "UTF-8",
 			  0, '"', 1, options);
       }
     else

@@ -18,7 +18,6 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #include "c-lang.h"
-#include "extract-store-integer.h"
 #include "symtab.h"
 #include "gdbtypes.h"
 #include "expression.h"
@@ -31,6 +30,7 @@
 #include "gdbarch.h"
 #include "utils.h"
 #include "valprint.h"
+#include "value.h"
 
 void
 zig_language_arch_info (struct gdbarch *gdbarch,
@@ -134,26 +134,66 @@ public:
     return language_defn::value_print (val, stream, options);
   }
 
+  void printptr (struct value *val, struct ui_file *stream, int recurse,
+		 const struct value_print_options *options) const
+  {
+    const type *real_type = check_typedef (val->type ());
+    gdb_assert (real_type->code () == TYPE_CODE_PTR);
+    type *real_target_type = check_typedef (real_type->target_type ());
+    switch (real_target_type->code ())
+      {
+      case TYPE_CODE_STRING:
+      case TYPE_CODE_ARRAY:
+	if (real_target_type->is_string_like ())
+	  {
+	    int len = -1;
+	    gdb::unique_xmalloc_ptr<gdb_byte> buffer;
+
+	    struct type *char_type;
+	    const char *charset;
+
+	    struct value *derefed_str = value_ind (val);
+
+	    c_get_string (derefed_str, &buffer, &len, &char_type, &charset);
+	    printstr (stream, real_target_type, buffer.get (), len, NULL,
+		      false, options);
+	    return;
+	  }
+	break;
+      default:
+	break;
+      }
+    error (_ ("Value with unsupported target type \"%s\" passed to "
+	      "`zig_language:printptr()`"),
+	   real_target_type->name ());
+  }
+
+  void printstr (struct ui_file *stream, struct type *type,
+		 const gdb_byte *string, unsigned int length,
+		 const char *user_encoding, int force_ellipses,
+		 const struct value_print_options *options) const override
+  {
+    const char *default_encoding = "UTF-8";
+    if (user_encoding != NULL)
+      {
+	error (_ ("User provided string encodings are not currently supported "
+		  "in zig, everything is assumed to be UTF-8. User provided "
+		  "\"%s\" as the string encoding."),
+	       user_encoding);
+      }
+    generic_printstr (stream, check_typedef (type->target_type ()), string,
+		      length, default_encoding, force_ellipses, '"', 1,
+		      options);
+  }
   void
   value_print_inner (struct value *val, struct ui_file *stream, int recurse,
 		     const struct value_print_options *options) const override
   {
     type *real_type = check_typedef (val->type ());
 
-    if (real_type->code () == TYPE_CODE_PTR
-	&& real_type->target_type ()->is_string_like ())
+    if (real_type->code () == TYPE_CODE_PTR)
       {
-	int len = -1;
-	gdb::unique_xmalloc_ptr<gdb_byte> buffer;
-
-	struct type *char_type;
-	const char *charset;
-
-	c_get_string (value_ind (val), &buffer, &len, &char_type, &charset);
-
-	// TODO: Currently i'm just assuming all strings are UTF-8, this should be the case most of the time but it's possible for a string to use another encoding.
-	generic_printstr (stream, char_type, buffer.get(), len, "UTF-8",
-			  0, '"', 1, options);
+	printptr (val, stream, recurse, options);
       }
     else
       {

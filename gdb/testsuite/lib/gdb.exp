@@ -2924,6 +2924,10 @@ gdb_caching_proc can_compile { lang } {
 	return [gdb_can_simple_compile can_compile_$lang $src executable {d}]
     }
 
+    if { $lang == "zig" } {
+        return 1
+    }
+
     if { $lang == "rust" } {
 	if { ![isnative] } {
 	    return 0

@@ -1,0 +1,6 @@
+load_lib zig-support.exp
+require use_gdb_stub
+require {can_compile zig}
+standard_testfile .zig
+
+gdb_test "print 9__97" " = 997"

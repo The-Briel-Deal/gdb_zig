@@ -1,4 +1,4 @@
-fn main() u8 {
+pub fn main() u8 {
     var a: u8 = 3;
     
     a = a + 1;

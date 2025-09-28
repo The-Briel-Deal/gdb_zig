@@ -27,13 +27,15 @@ proc set_lang_zig {} {
 }
 
 proc gdb_compile_zig {sources dest options} {
-    set res 0
+
+    set res ""
 
     if {[llength $sources] > 1} {
 	error "gdb zig setup can only compile one source file at a time"
     }
 
-    exec zig cc $sources -femit-bin $dest
+
+    exec zig build-exe $sources -femit-bin=$dest
 
 
     return $res

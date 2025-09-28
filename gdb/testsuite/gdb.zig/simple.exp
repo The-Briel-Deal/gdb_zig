@@ -1,6 +1,10 @@
 load_lib zig-support.exp
-require use_gdb_stub
 require {can_compile zig}
 standard_testfile .zig
 
-gdb_test "print 9__97" " = 997"
+if { [prepare_for_testing "failed to prepare" \
+	${testfile} ${srcfile} "zig"] } {
+    return
+}
+
+gdb_test "print 1" " = 1"

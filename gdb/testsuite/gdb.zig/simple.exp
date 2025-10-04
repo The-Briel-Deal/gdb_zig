@@ -7,4 +7,10 @@ if { [prepare_for_testing "failed to prepare" \
     return
 }
 
-gdb_test "print 1" " = 1"
+if {![runto ${srcfile}:3]} {
+    untested "could not run to breakpoint"
+    return -1
+}
+
+# For some reason I can't get '\003' to match, I wonder if \ is the regex delimiter?
+gdb_test "print a" "= 3 '.003'"

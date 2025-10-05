@@ -13,4 +13,4 @@ if {![runto ${srcfile}:3]} {
 }
 
 # For some reason I can't get '\003' to match, I wonder if \ is the regex delimiter?
-gdb_test "print a" "= 3 '.003'"
+gdb_test "print a" {= 3 '\\003'}

@@ -1,0 +1,26 @@
+load_lib zig-support.exp
+require {can_compile zig}
+standard_testfile .zig
+
+if { [prepare_for_testing "failed to prepare" \
+	${testfile} ${srcfile} "zig"] } {
+    return
+}
+
+if {![runto ${srcfile}:3]} {
+    untested "could not run to breakpoint"
+    return -1
+}
+gdb_test "print a" {= \(\[3:0\]u8 \*\) "foo"} "print a comptime string"
+
+if {![runto ${srcfile}:4]} {
+    untested "could not run to breakpoint"
+    return -1
+}
+gdb_test "print b" {= \(\[3:0\]u8 \*\) "bar"} "print a second comptime string"
+
+if {![runto ${srcfile}:5]} {
+    untested "could not run to breakpoint"
+    return -1
+}
+gdb_test "print c" {= \(\[7:0\]u8 \*\) "foo bar"} "print the result of two comptime strings concatenated"

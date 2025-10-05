@@ -12,5 +12,11 @@ if {![runto ${srcfile}:3]} {
     return -1
 }
 
-# For some reason I can't get '\003' to match, I wonder if \ is the regex delimiter?
-gdb_test "print a" {= 3 '\\003'}
+gdb_test "print a" {= 3 '\\003'} "print a before adding 1"
+
+if {![runto ${srcfile}:5]} {
+    untested "could not run to breakpoint"
+    return -1
+}
+
+gdb_test "print a" {= 4 '\\004'} "print a after adding 1"

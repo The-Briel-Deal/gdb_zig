@@ -1,6 +1,5 @@
+const std = @import("std");
 pub fn main() void {
-    comptime var a: comptime_int = 1428963;
-
-    a += 1;
+    const a: comptime_int = 0xaabbccdd;
+    std.debug.print("a = {x}", .{a});
 }
-

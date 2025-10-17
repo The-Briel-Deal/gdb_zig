@@ -29,7 +29,8 @@ proc set_lang_zig {} {
 proc gdb_compile_zig {sources dest options} {
 
     global zig_compiler
-    set zig_compiler ""
+    # set zig_compiler ""
+    puts [format "GF_DEBUG: 1 zig_compiler=%s" $zig_compiler]
 
     set res ""
 
@@ -37,13 +38,15 @@ proc gdb_compile_zig {sources dest options} {
 	error "gdb zig setup can only compile one source file at a time"
     }
 
-    if {[info exists zig_compiler]} {
+    if {![info exists zig_compiler]} {
 	set zig_compiler "zig"
     }
 
     if {$zig_compiler == ""} {
 	set zig_compiler "zig"
     }
+    
+    puts [format "GF_DEBUG: zig_compiler=%s" $zig_compiler]
 
     exec $zig_compiler build-exe $sources -femit-bin=$dest
 

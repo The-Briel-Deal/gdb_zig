@@ -11,4 +11,4 @@ if {![runto ${srcfile}:3]} {
     untested "could not run to breakpoint"
     return -1
 }
-gdb_test "print a" {1428963} "print a comptime int"
+gdb_test "print a" {13} "print a comptime int"

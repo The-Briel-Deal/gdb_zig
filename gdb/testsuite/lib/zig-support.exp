@@ -13,14 +13,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Auxiliary function to set the language to Rust.
+# Auxiliary function to set the language to Zig.
 # The result is 1 (true) for success, 0 (false) for failure.
 proc set_lang_zig {} {
     if [gdb_test_no_output "set language zig"] {
 	return 0
     }
     if [gdb_test "show language" ".* source language is \"zig\"." \
-	   "set language to \"rust\""] {
+	   "set language to \"zig\""] {
 	return 0
     }
     return 1
@@ -28,14 +28,24 @@ proc set_lang_zig {} {
 
 proc gdb_compile_zig {sources dest options} {
 
+    global zig_compiler
+    set zig_compiler ""
+
     set res ""
 
     if {[llength $sources] > 1} {
 	error "gdb zig setup can only compile one source file at a time"
     }
 
+    if {[info exists zig_compiler]} {
+	set zig_compiler "zig"
+    }
 
-    exec zig build-exe $sources -femit-bin=$dest
+    if {$zig_compiler == ""} {
+	set zig_compiler "zig"
+    }
+
+    exec $zig_compiler build-exe $sources -femit-bin=$dest
 
 
     return $res

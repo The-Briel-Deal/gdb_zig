@@ -2,12 +2,14 @@ load_lib zig-support.exp
 require {can_compile zig}
 standard_testfile .zig
 
-if { [prepare_for_testing "failed to prepare" \
-	${testfile} ${srcfile} "zig"] } {
+if {
+    [prepare_for_testing "failed to prepare" \
+        ${testfile} ${srcfile} "zig"]
+} {
     return
 }
 
-if {![runto ${srcfile}:3]} {
+if {![runto ${srcfile}:4]} {
     untested "could not run to breakpoint"
     return -1
 }

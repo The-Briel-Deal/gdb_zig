@@ -45,7 +45,9 @@ zig_language_arch_info (struct gdbarch *gdbarch,
   const struct builtin_type *builtin = builtin_type (gdbarch);
 
   /* Helper function to allow shorter lines below.  */
-  auto add = [&] (struct type *t) { lai->add_primitive_type (t); };
+  auto add =[&](struct type * t)
+  { lai->add_primitive_type (t);
+  };
 
   add (builtin->builtin_int);
   add (builtin->builtin_long);
@@ -74,12 +76,11 @@ zig_language_arch_info (struct gdbarch *gdbarch,
 
 /* Class representing the Zig language.  */
 
-class zig_language : public language_defn
+class zig_language:public language_defn
 {
 public:
-  zig_language ()
-    : language_defn (language_zig)
-  { /* Nothing.  */
+  zig_language ():language_defn (language_zig)
+  {				/* Nothing.  */
   }
 
   /* See language.h.  */
@@ -98,9 +99,9 @@ public:
 
   /* See language.h.  */
 
-  const std::vector<const char *> &filename_extensions () const override
+  const std::vector < const char *>&filename_extensions () const override
   {
-    static const std::vector<const char *> extensions = { ".zig" };
+    static const std::vector < const char *>extensions = { ".zig" };
     return extensions;
   }
 
@@ -129,7 +130,7 @@ public:
 
   struct value *read_var_value (struct symbol *var,
 				const struct block *var_block,
-				const frame_info_ptr &frame) const override
+				const frame_info_ptr & frame) const override
   {
     return language_defn::read_var_value (var, var_block, frame);
   }
@@ -145,45 +146,48 @@ public:
     /* * Zig arrays with a runtime length field look like:
      * struct { ptr = 0x12345678, len = 3 };
      */
-    const struct type *real_type = check_typedef(type);
-    gdb_assert(real_type->code() == TYPE_CODE_STRUCT);
-    if (real_type->num_fields() != 2) {
-      return false;
-    }
-    if (strncmp(real_type->field(0).name(), ZIG_ARRAY_PTR_FIELD_NAME,
-                sizeof(ZIG_ARRAY_PTR_FIELD_NAME)) != 0) {
-      return false;
-    }
-    if (strncmp(real_type->field(1).name(), ZIG_ARRAY_LEN_FIELD_NAME,
-                sizeof(ZIG_ARRAY_LEN_FIELD_NAME)) != 0) {
-      return false;
-    }
+    const struct type *real_type = check_typedef (type);
+    gdb_assert (real_type->code () == TYPE_CODE_STRUCT);
+    if (real_type->num_fields () != 2)
+      {
+	return false;
+      }
+    if (strncmp (real_type->field (0).name (), ZIG_ARRAY_PTR_FIELD_NAME,
+		 sizeof (ZIG_ARRAY_PTR_FIELD_NAME)) != 0)
+      {
+	return false;
+      }
+    if (strncmp (real_type->field (1).name (), ZIG_ARRAY_LEN_FIELD_NAME,
+		 sizeof (ZIG_ARRAY_LEN_FIELD_NAME)) != 0)
+      {
+	return false;
+      }
     return true;
   }
 
   static void print_struct_string (struct value *val, struct type *type,
-                                  struct ui_file *stream) 
+				   struct ui_file *stream)
   {
     // TODO: implement
-    error("Not implemented.");
+    error ("Not implemented.");
   }
 
   bool is_string_type_p (struct type *type) const override
   {
-    struct type *real_type = check_typedef(type);
-    switch (real_type->code()) {
-    case TYPE_CODE_STRUCT:
-      return is_struct_string(real_type);
-    default:
-      return c_is_string_type_p(type);
-    }
+    struct type *real_type = check_typedef (type);
+    switch (real_type->code ())
+      {
+      case TYPE_CODE_STRUCT:
+	return is_struct_string (real_type);
+	default:return c_is_string_type_p (type);
+      }
   }
 
   void printptr (struct value *val, struct ui_file *stream, int recurse,
 		 const struct value_print_options *options) const
   {
     const type *real_type = check_typedef (val->type ());
-    gdb_assert (real_type->code () == TYPE_CODE_PTR);
+      gdb_assert (real_type->code () == TYPE_CODE_PTR);
     type *real_target_type = check_typedef (real_type->target_type ());
     switch (real_target_type->code ())
       {
@@ -192,63 +196,63 @@ public:
 	if (real_target_type->is_string_like ())
 	  {
 	    int len = -1;
-	    gdb::unique_xmalloc_ptr<gdb_byte> buffer;
+	      gdb::unique_xmalloc_ptr < gdb_byte > buffer;
 
 	    struct type *char_type;
 	    const char *charset;
 
 	    struct value *derefed_str = value_ind (val);
 
-	    c_get_string (derefed_str, &buffer, &len, &char_type, &charset);
-	    printstr (stream, real_target_type, buffer.get (), len, NULL,
-		      false, options);
-	    return;
+	      c_get_string (derefed_str, &buffer, &len, &char_type, &charset);
+	      printstr (stream, real_target_type, buffer.get (), len, NULL,
+			false, options);
+	      return;
 	  }
 	break;
       default:
 	break;
       }
-    error (_ ("Value with unsupported target type \"%s\" passed to "
-	      "`zig_language:printptr()`"),
-	   real_target_type->name ());
+    error (_("Value with unsupported target type \"%s\" passed to "
+	     "`zig_language:printptr()`"), real_target_type->name ());
   }
 
   void printstr (struct ui_file *stream, struct type *type,
-		 const gdb_byte *string, unsigned int length,
+		 const gdb_byte * string, unsigned int length,
 		 const char *user_encoding, int force_ellipses,
 		 const struct value_print_options *options) const override
   {
     const char *default_encoding = "UTF-8";
     if (user_encoding != NULL)
       {
-	error (_ ("User provided string encodings are not currently supported "
-		  "in zig, everything is assumed to be UTF-8. User provided "
-		  "\"%s\" as the string encoding."),
-	       user_encoding);
+	error (_("User provided string encodings are not currently supported "
+		 "in zig, everything is assumed to be UTF-8. User provided "
+		 "\"%s\" as the string encoding."), user_encoding);
       }
     generic_printstr (stream, check_typedef (type->target_type ()), string,
 		      length, default_encoding, force_ellipses, '"', 1,
 		      options);
   }
   void
-  value_print_inner (struct value *val, struct ui_file *stream, int recurse,
-		     const struct value_print_options *options) const override
+    value_print_inner (struct value *val, struct ui_file *stream, int recurse,
+		       const struct value_print_options *options) const
+    override
   {
     type *real_type = check_typedef (val->type ());
 
 
-    switch (real_type->code()) {
+    switch (real_type->code ())
+      {
       case TYPE_CODE_PTR:
 	printptr (val, stream, recurse, options);
 	break;
-      case TYPE_CODE_STRUCT:
-	if (is_struct_string(real_type)) {
-	  print_struct_string(val, real_type, stream);
-	}
+	case TYPE_CODE_STRUCT:if (is_struct_string (real_type))
+	  {
+	    print_struct_string (val, real_type, stream);
+	  }
 	break;
       default:
 	c_value_print_inner (val, stream, recurse, options);
-    }
+      }
   }
 
   /* See language.h.  */

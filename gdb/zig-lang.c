@@ -18,6 +18,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #include "c-lang.h"
+#include "gdbsupport/errors.h"
 #include "symtab.h"
 #include "gdbtypes.h"
 #include "expression.h"
@@ -28,9 +29,14 @@
 #include "cp-support.h"
 #include "gdbcore.h"
 #include "gdbarch.h"
+#include "ui-file.h"
 #include "utils.h"
 #include "valprint.h"
 #include "value.h"
+#include <cstring>
+
+#define ZIG_ARRAY_PTR_FIELD_NAME "ptr"
+#define ZIG_ARRAY_LEN_FIELD_NAME "len"
 
 void
 zig_language_arch_info (struct gdbarch *gdbarch,
@@ -134,6 +140,45 @@ public:
     return language_defn::value_print (val, stream, options);
   }
 
+  static bool is_struct_string (struct type *type)
+  {
+    /* * Zig arrays with a runtime length field look like:
+     * struct { ptr = 0x12345678, len = 3 };
+     */
+    const struct type *real_type = check_typedef(type);
+    gdb_assert(real_type->code() == TYPE_CODE_STRUCT);
+    if (real_type->num_fields() != 2) {
+      return false;
+    }
+    if (strncmp(real_type->field(0).name(), ZIG_ARRAY_PTR_FIELD_NAME,
+                sizeof(ZIG_ARRAY_PTR_FIELD_NAME)) != 0) {
+      return false;
+    }
+    if (strncmp(real_type->field(1).name(), ZIG_ARRAY_LEN_FIELD_NAME,
+                sizeof(ZIG_ARRAY_LEN_FIELD_NAME)) != 0) {
+      return false;
+    }
+    return true;
+  }
+
+  static void print_struct_string (struct value *val, struct type *type,
+                                  struct ui_file *stream) 
+  {
+    // TODO: implement
+    error("Not implemented.");
+  }
+
+  bool is_string_type_p (struct type *type) const override
+  {
+    struct type *real_type = check_typedef(type);
+    switch (real_type->code()) {
+    case TYPE_CODE_STRUCT:
+      return is_struct_string(real_type);
+    default:
+      return c_is_string_type_p(type);
+    }
+  }
+
   void printptr (struct value *val, struct ui_file *stream, int recurse,
 		 const struct value_print_options *options) const
   {
@@ -191,14 +236,19 @@ public:
   {
     type *real_type = check_typedef (val->type ());
 
-    if (real_type->code () == TYPE_CODE_PTR)
-      {
+
+    switch (real_type->code()) {
+      case TYPE_CODE_PTR:
 	printptr (val, stream, recurse, options);
-      }
-    else
-      {
+	break;
+      case TYPE_CODE_STRUCT:
+	if (is_struct_string(real_type)) {
+	  print_struct_string(val, real_type, stream);
+	}
+	break;
+      default:
 	c_value_print_inner (val, stream, recurse, options);
-      }
+    }
   }
 
   /* See language.h.  */
@@ -216,6 +266,6 @@ public:
   }
 };
 
-/* Single instance of the C language class.  */
+/* Single instance of the Zig language class.  */
 
 static zig_language zig_language_defn;

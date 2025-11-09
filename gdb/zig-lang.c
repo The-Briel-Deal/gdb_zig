@@ -18,6 +18,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #include "c-lang.h"
+#include "gdbsupport/array-view.h"
 #include "gdbsupport/errors.h"
 #include "symtab.h"
 #include "gdbtypes.h"
@@ -33,7 +34,9 @@
 #include "utils.h"
 #include "valprint.h"
 #include "value.h"
+#include <cstdint>
 #include <cstring>
+#include <cinttypes>
 
 #define ZIG_ARRAY_PTR_FIELD_NAME "ptr"
 #define ZIG_ARRAY_LEN_FIELD_NAME "len"
@@ -168,8 +171,13 @@ public:
   static void print_struct_string (struct value *val, struct type *type,
 				   struct ui_file *stream)
   {
-    // TODO: implement
-    error ("Not implemented.");
+    struct value *ptr = val->primitive_field(0, 0, type);
+    struct value *len = val->primitive_field(0, 1, type);
+    gdb::array_view<const gdb_byte> ptr_contents = ptr->contents();
+    void* ptr_addr = *(void**)ptr_contents.data();
+    gdb::array_view<const gdb_byte> len_contents = len->contents();
+    uint64_t len_val = *(uint64_t*)len_contents.data();
+    gdb_printf("\n\nGF_DEBUG: ptr_addr = %p, len = %" PRIu64 "\n\n", ptr_addr, len_val);
   }
 
   bool is_string_type_p (struct type *type) const override

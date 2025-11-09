@@ -169,17 +169,27 @@ public:
     return true;
   }
 
-  static void print_struct_string (struct value *val, struct type *type,
-				   struct ui_file *stream)
+  void print_struct_string (struct value *val, struct type *type,
+			    struct ui_file *stream,
+			    const struct value_print_options *options) const
   {
-    struct value *ptr = val->primitive_field (0, 0, type);
-    struct value *len = val->primitive_field (0, 1, type);
-    gdb::array_view<const gdb_byte> ptr_contents = ptr->contents ();
-    void *ptr_addr = *(void **) ptr_contents.data ();
+    struct type *real_type = check_typedef (type);
+
+    struct value *ptr = val->primitive_field (0, 0, real_type);
+    struct type *ptr_type = check_typedef (ptr->type ());
+    struct value *len = val->primitive_field (0, 1, real_type);
     gdb::array_view<const gdb_byte> len_contents = len->contents ();
-    uint64_t len_val = *(uint64_t *) len_contents.data ();
-    gdb_printf ("\n\nGF_DEBUG: ptr_addr = %p, len = %" PRIu64 "\n\n", ptr_addr,
-		len_val);
+    // TODO: This could be a size other than 64 bits, I should get the size of int from the type.
+    int len_val = *(uint64_t *) len_contents.data ();
+    gdb::unique_xmalloc_ptr<gdb_byte> buffer;
+
+    struct type *char_type;
+    const char *charset;
+
+    c_get_string (ptr, &buffer, &len_val, &char_type, &charset);
+
+    printstr (stream, ptr_type->target_type (), buffer.get (), len_val, NULL,
+	      false, options);
   }
 
   bool is_string_type_p (struct type *type) const override
@@ -215,8 +225,8 @@ public:
 	    struct value *derefed_str = value_ind (val);
 
 	    c_get_string (derefed_str, &buffer, &len, &char_type, &charset);
-	    printstr (stream, real_target_type, buffer.get (), len, NULL,
-		      false, options);
+	    printstr (stream, real_target_type->target_type (), buffer.get (),
+		      len, NULL, false, options);
 	    return;
 	  }
 	break;
@@ -241,9 +251,8 @@ public:
 		  "\"%s\" as the string encoding."),
 	       user_encoding);
       }
-    generic_printstr (stream, check_typedef (type->target_type ()), string,
-		      length, default_encoding, force_ellipses, '"', 1,
-		      options);
+    generic_printstr (stream, check_typedef (type), string, length,
+		      default_encoding, force_ellipses, '"', 1, options);
   }
   void
   value_print_inner (struct value *val, struct ui_file *stream, int recurse,
@@ -259,7 +268,7 @@ public:
       case TYPE_CODE_STRUCT:
 	if (is_struct_string (real_type))
 	  {
-	    print_struct_string (val, real_type, stream);
+	    print_struct_string (val, real_type, stream, options);
 	  }
 	break;
       default:
